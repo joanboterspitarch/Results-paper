@@ -10,34 +10,35 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 def enlarge_process(matrix, n, C):
-
-    row = matrix[0, :].numpy()
-    col = matrix[:, -1].numpy()
-    col = col[::-1]
+    row = matrix[0, :]
+    col = matrix[:, -1]
+    col = col.flip(0)
     size = row.shape[0]
-    A = matrix.numpy()
+    A = matrix.clone()
 
     for i in range(1, n):
-        A_aux = np.zeros((size+1, size+1))
-        A_aux[-size:, 0:size] = A.copy()
+        A_aux = torch.zeros((size + 1, size + 1), dtype=A.dtype, device=A.device)
+        A_aux[-size:, :size] = A.clone()
 
-        new_row, new_col = np.zeros(size+1), np.zeros(size+1)
+        new_row, new_col = torch.zeros(size + 1, dtype=row.dtype, device=row.device), torch.zeros(size + 1, dtype=col.dtype, device=col.device)
 
-        new_row[:-2], new_row[-1] = row[:-1]/C, row[-1]/C
-        new_row[-2] = (new_row[-3] + new_row[-1])/2
+        new_row[:-2] = row[:-1] / C
+        new_row[-1] = row[-1] / C
+        new_row[-2] = (new_row[-3] + new_row[-1]) / 2
 
-        new_col[:-2], new_col[-1] = col[:-1]/C, col[-1]/C
-        new_col[-2] = (new_col[-3] + new_col[-1])/2
+        new_col[:-2] = col[:-1] / C
+        new_col[-1] = col[-1] / C
+        new_col[-2] = (new_col[-3] + new_col[-1]) / 2
 
-        
-        A_aux[0, :] = new_row.copy()
-        A_aux[:, -1][::-1] = new_col.copy()     
+        A_aux[0, :] = new_row.clone()
+        A_aux[:, -1] = new_col.flip(0).clone()
 
-        A = A_aux.copy()
-        row, col = new_row.copy(), new_col.copy()
+        A = A_aux.clone()
+        row, col = new_row.clone(), new_col.clone()
         size = row.shape[0]
 
-    return torch.from_numpy(A).float()
+    return A.float()
+
 
 class Grid:
 
