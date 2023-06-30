@@ -82,7 +82,6 @@ class Grid:
         self.div = div  # loss factor for further cells.
 
         # variables related to the wind
-
         self.Q = (self.Theta/(torch.pi/2) + 1).type(torch.int8)
         self.Xi = torch.where(
             torch.logical_or(self.Q == 1, self.Q == 3),
